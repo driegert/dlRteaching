@@ -1,7 +1,7 @@
 Package: dlRteaching
 Type: Package
 Title: Plotting and WeBWorK Utilities for Teaching Statistics
-Version: 2023.09-001
+Version: 2023.9.2
 Author: Dave Riegert
 Maintainer: Dave Riegert <davidriegert@trentu.ca>
 Description: This should be a description, but isn't right now.
