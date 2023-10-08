@@ -8,4 +8,6 @@ Description: This should be a description, but isn't right now.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Depends:
+  R6
 RoxygenNote: 7.2.3
