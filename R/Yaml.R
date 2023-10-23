@@ -33,14 +33,54 @@ Yaml <- R6::R6Class(
       private$.yaml_properties <- yaml_properties
     },
 
-    print = function(..., type = c("ww", "qmd")){
-      if (type[1] == "ww"){
-
-      } else if (type[1] == "qmd") {
+    print = function(..., output = c("ww", "qmd")){
+      if (output[1] == "ww"){
+        # ct(private$.yaml_to_ww())
+      } else if (output[1] == "qmd") {
         cat("---\n", private$.yaml, "---\n")
       } else {
         cat(private$.yaml)
       }
+    },
+    
+    ww_top = function(){
+      'DOCUMENT();
+      
+      # Macros help files:
+      # https://webwork.maa.org/pod/pg/macros/
+      loadMacros(
+        "PGstandard.pl",
+        "MathObjects.pl",
+        "PGchoicemacros.pl",
+        "PGgraders.pl",
+        "parserRadioButtons.pl",
+        "PGML.pl",
+        "PGcourse.pl",
+        "RserveClient.pl",
+        "parserPopUp.pl",
+        "niceTables.pl",
+        "parserOneOf.pl"
+      );
+      # Print problem number and point value (weight) for the problem
+      TEXT(beginproblem());
+      
+      $tol = 0.01;
+      $tolType = "relative"; # or "absolute"
+      
+      #  Setup
+      Context("Numeric");
+      Context()->flags->set(tolerance => $tol, tolType => $tolType);\n\n'
+    },
+    
+    ww_bottom = function(partialCorrect = TRUE){
+      paste0('END_PGML
+      
+      #  Answers
+      # ANS(Real($mean)->cmp);
+      
+      $showPartialCorrectAnswers = ', as.numeric(partialCorrect), ';
+      
+      ENDDOCUMENT();')
     }
   ),
 
@@ -50,8 +90,12 @@ Yaml <- R6::R6Class(
   private = list(
     .yaml = "",
     # .yaml_idx = NA,
-    .yaml_properties = NA
+    .yaml_properties = NA,
     # .yaml_stend_idx = NA
+    
+    .yaml_to_ww = function(){
+      ""
+    }
   ),
 
 ##########
