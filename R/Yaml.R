@@ -1,41 +1,46 @@
+
 #' @export
-Yaml <- R6::R6Class("Yaml",
-  inherit = NULL,
+Yaml <- R6::R6Class(
+  "Yaml",
 
 ##########
 # PUBLIC #
 ##########
   public = list(
-    initialize = function(title, subtitle = ""
-                          , author = "Dave Riegert"
-                          , date = "today", date_format = "long"
-                          , format = "pdf") {
-      private$.title <- title
-      private$.subtitle <- subtitle
-      private$.author <- author
-      private$.date <- date
-      private$.date_format <- date_format
-      private$.format <- format
+    initialize = function(text){
+      self$parse_yaml(text)
+      # --- can create horizontal rules which we want to leave in the files
+      # so, we only take the first two indices
+      invisible(self)
     },
 
-    get_yaml = function(n_newlines = 2){
-      private$.check_date()
-      private$.check_date_format()
-      paste0("---\n"
-             , "title: \"", private$.title, "\"\n"
-             , "subtitle: \"", private$.subtitle, "\"\n"
-             , "author: \"", private$.author, "\"\n"
-             , "date: ", private$.date, "\n"
-             , "date-format: ", private$.date_format, "\n"
-             , "format: ", private$.format, "\n"
-             , "---"
-             , paste(rep("\n", n_newlines), collapse = ""))
+    parse_yaml = function(yaml){
+      properties.tmp <- lapply(yaml, \(xx) {
+        tmp <- unlist(strsplit(x = xx, split = ": ", fixed = TRUE))
+        if (length(tmp) > 2){
+          c(tmp[1], paste(tmp[2:length(tmp)], collapse = ": "))
+        } else {
+          tmp
+        }
+      })
+
+      yaml_properties <- as.data.frame(do.call("rbind", properties.tmp))
+      names(yaml_properties) <- c("property", "value")
+
+      # private$.yaml_stend_idx <- yaml_start_stop
+      private$.yaml <- yaml
+      # private$.yaml_idx <- yaml_idx
+      private$.yaml_properties <- yaml_properties
     },
 
-    print = function(...){
-      private$.check_date()
-      private$.check_date_format()
-      self$get_yaml()
+    print = function(..., type = c("ww", "qmd")){
+      if (type[1] == "ww"){
+
+      } else if (type[1] == "qmd") {
+        cat("---\n", private$.yaml, "---\n")
+      } else {
+        cat(private$.yaml)
+      }
     }
   ),
 
@@ -43,71 +48,46 @@ Yaml <- R6::R6Class("Yaml",
 # PRIVATE #
 ###########
   private = list(
-    .title = "",
-    .author = "",
-    .date = "",
-    .date_format = "long",
-    .format = "pdf",
-    .allowed_date_formats = c("full", "long", "medium"
-                              , "short", "iso"),
-    .subtitle = "",
-
-    .check_date = function(){
-      private$.date <- ifelse(private$.date == "today", "today"
-                     , paste0("\"", private$.date, "\""))
-    },
-
-    .check_date_format = function(){
-      private$.date_format <- ifelse(
-        private$.date_format %in% private$.allowed_date_formats
-        , private$.date_format, paste0("\"", private$.date_format, "\""))
-    }
+    .yaml = "",
+    # .yaml_idx = NA,
+    .yaml_properties = NA
+    # .yaml_stend_idx = NA
   ),
 
 ##########
 # ACTIVE #
 ##########
   active = list(
-    set_code_wrap = function(value = TRUE){
-      if (missing(value)){
-        stop("Value must be specified")
+    yaml = function(value){
+      if(missing(value)){
+        private$.yaml
       } else {
-        if (! is.logical(value)){
-          stop("Value must be TRUE or FALSE")
-        }
-        private$.code_wrap <- value
-      }
-      warning("This doesn't do anything yet.")
-      # pdf:
-      #   code-line-numbers: true
-      # include-in-header:
-      #  \usepackage{fancyvrb}
-      #  \usepackage{fvextra}
-      #  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
-    },
-
-    set_date_format = function(value){
-      if (missing(value)){
-        stop("Value must be specified")
-      } else {
-        if (! value %in% private$.allowed_date_formats){
-          warning(paste0("Be sure the date format is correct.
-                  If using a style, the following are valid:"
-            , paste(private$.allowed_date_formats, collapse = ", ")))
-        }
-        private$.date_format <- value
+        stop("Initialize a new object.")
       }
     },
 
-    set_format = function(value){
-      if (missing(value)){
-        stop("Value must be specified")
+    yaml_idx = function(value){
+      if(missing(value)){
+        private$.yaml_idx
       } else {
-        if (! value %in% c("pdf", "html", "docx", "odt", "epub")){
-          stop("Value must be one of: pdf, html, docx, odt, epub.")
-        }
-        private$.format <- value
+        stop("Initialize a new object.")
+      }
+    },
+
+    yaml_properties = function(value){
+      if(missing(value)){
+        private$.yaml_properties
+      } else {
+        stop("Initialize a new object.")
+      }
+    },
+
+    yaml_stend_idx = function(value){
+      if(missing(value)){
+        private$.yaml_stend_idx
+      } else {
+        stop("Initialize a new object.")
       }
     }
-  ),
+  )
 )

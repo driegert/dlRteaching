@@ -1,0 +1,39 @@
+
+> cat(ww_simp)
+DOCUMENT();
+
+# Macros help files:
+# https://webwork.maa.org/pod/pg/macros/
+loadMacros(
+  "PGstandard.pl",
+  "MathObjects.pl",
+  "PGchoicemacros.pl",
+  "PGgraders.pl",
+  "parserRadioButtons.pl",
+  "PGML.pl",
+  "PGcourse.pl",
+  "RserveClient.pl",
+  "parserPopUp.pl",
+  "niceTables.pl",
+  "parserOneOf.pl"
+);
+# Print problem number and point value (weight) for the problem
+TEXT(beginproblem());
+
+$tol = 0.01;
+$tolType = "relative"; # or "absolute"
+
+#  Setup
+Context("Numeric");
+Context()->flags->set(tolerance => $tol, tolType => $tolType);
+
+BEGIN_PGML
+
+This is a simple WeBWorK file.
+
+END_PGML
+
+$showPartialCorrectAnswers = 1;
+
+ENDDOCUMENT();
+> sink()

@@ -1,0 +1,46 @@
+---
+title: "A Title: With some colon stupidity"
+subtitle: "Secondary goodness"
+author: "Dave Riegert"
+format: pdf
+nothingburger: "Some info: And such"
+---
+
+# Ahoy hoy
+
+```{r}
+p <- 1 + 2
+```
+
+Some other stuff.
+
+
+```
+This is a verbatim environment.
+```
+
+```{r}
+#| label: r-code0
+p2 <- 12-3
+```
+
+Some more text about things... 
+
+```{r}
+#| label: ww-part1
+
+a <- 12 + 9
+b <- a * 15
+```
+
+```{r}
+#| label: plt-myplot
+
+# "plt-" indicates that this chunk contains a plot, which means that temporary files and such must be made
+```
+
+```{r}
+#| label: r-code1
+
+# "r-" indicates that this chunk contains R code that will be executed
+```

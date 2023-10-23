@@ -9,5 +9,9 @@ License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 Depends:
-  R6
+  R6,
+  ggplot2,
+  gridExtra,
+  knitr,
+  kableExtra
 RoxygenNote: 7.2.3
