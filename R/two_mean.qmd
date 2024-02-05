@@ -1,0 +1,288 @@
+---
+title: "Untitled"
+format: pdf
+---
+
+```{r}
+#| label: setup
+
+is_paired <- sample(c(TRUE, FALSE), size = 1
+                    , prob = c(0, 1))
+sigma_known <- sample(c(TRUE, FALSE), size = 1
+                      , prob = c(0, 1))
+data_given <- sample(c(TRUE, FALSE), size = 1
+                     , prob = c(1, 0))
+
+null_value_zero <- sample(c(TRUE, FALSE), size = 1
+                          , prob = c(0.5, 0.5))
+prob_two_sided <- 0.5
+
+experimental_units <- "e units"
+measurement_units <- "m units"
+group1_name <- "group 1"
+group2_name <- "group 2"
+g1_subscript <- "1"
+g2_subscript <- "2"
+
+difference_order <- paste0(group1_name, " minus ", group2_name)
+
+alpha <- sample((1:15) / 100, 1)
+mu0_range <- seq(1, 10, by = 1)
+
+# for independent data generation
+sigma1_range <- seq(1, 7, by = 1)
+sigma2_range <- seq(1, 7, by = 1)
+mu1_range <- seq(20, 40, by = 1)
+# mu2_range <- seq(20, 40, by = 1)
+n_range1 <- seq(31, 60, by = 1)
+n_range2 <- seq(31, 60, by = 1)
+
+# for paired data generation
+sd_diff_range <- seq(1, 7, by = 1)
+mu_diff_range <- seq(-10, 10, by = 1)
+```
+
+
+```{r}
+#| label: set-parameters
+
+sigma1 <- sample(sigma1_range, 1)
+sigma2 <- sample(sigma2_range, 1)
+mu1 <- sample(mu1_range, 1)
+
+if(null_value_zero){
+  mu0 <- 0
+} else {
+  mu0 <- sample(mu0_range, 1)
+}
+
+n1 <- sample(n_range1, 1)
+if (is_paired) n2 <- n1 else n2 <- sample(n_range2, 1)
+
+mu2 <- rnorm(1, mean = mu1 - mu0, sd = 1.5 * sqrt(sigma1^2/n1 + sigma2^2/n2))
+
+
+sigma_diff <- sample(sd_diff_range, 1)
+mu_diff <- sample(mu_diff_range, 1)
+```
+
+
+```{r}
+#| label: generate-data
+
+x1 <- round(rnorm(n1, mean = mu1, sd = sigma1), 1)
+
+if (is_paired){
+  x_diff <- round(rnorm(n2, mean = mu_diff, sd = sigma_diff), 1)
+  x2 <- x1 - x_diff
+  xbar_diff <- mean(x_diff)
+  stat_sign <- sign(xbar_diff)
+} else {
+  x_diff <- c(1, 2) # needed just to have values
+  xbar_diff <- mean(x_diff)
+  x2 <- round(rnorm(n2, mean = mu2, sd = sigma2), 1)
+  xbar1 <- mean(x1)
+  xbar2 <- mean(x2)
+  
+  stat_sign <- sign(xbar1 - xbar2)
+}
+
+if (sigma_known){
+    sd_x1 <- sigma1
+    sd_x2 <- sigma2
+    sd_diff <- round(sigma_diff, 1)
+    data_given <- FALSE
+    sd_type <- "population"
+    sd_symbol <- "\\sigma"
+} else {
+  if (data_given){
+    sd_x1 <- sd(x1)
+    sd_x2 <- sd(x2)
+    sd_diff <- sd(xbar_diff)
+  } else {
+    xbar1 <- round(mean(x1), 2)
+    xbar2 <- round(mean(x2), 2)
+    sd_x1 <- round(sd(x1), 1)
+    sd_x2 <- round(sd(x2), 1)
+    
+    xbar_diff <- round(xbar_diff, 2)
+    sd_diff <- round(sd(xbar_diff), 1)
+  }
+  sd_type <- "sample"
+  sd_symbol <- "s"
+}
+```
+
+```{r}
+#| label: setup-plugin-values
+
+if (data_given){
+  data_start <- paste0("The data collected were:")
+  if (is_paired){
+    x1_data <- paste0("x_diff <- c("
+                      , paste(x_diff, collapse = ", "), ")")
+    x2_data <- paste0("")
+  } else {
+    x1_data <- paste0("x", g1_subscript, " <- c("
+                      , paste(x1, collapse = ", "), ")")
+    x2_data <- paste0("x", g2_subscript, " <- c("
+                      , paste(x2, collapse = ", "), ")")
+  }
+} else {
+  if (is_paired){
+    x1_data <- paste0(
+      "the estimated mean difference was found to be `\\bar{x}_d = "
+      , xbar_diff, "`", " and the ", sd_type
+      , " standard deviation for the difference is `s_d = ", sd_diff, "`")
+    x2_data <- ""
+  } else {
+    x1_data <- paste0("the estimated mean for ", group1_name
+                         , " is `\\bar{x}_1 = ", xbar1, "`", " and the "
+                         , sd_type, " standard deviation for "
+                         , group1_name, " is `s_", g1_subscript, " = sd_x1`")
+    x2_data <- paste0("the estimated mean for ", group2_name
+                         , " is `\\bar{x}_2 = ", xbar2, "`", " and the "
+                         , sd_type, " standard deviation for "
+                         , group2_name, " is `s_", g2_subscript, " = sd_x2`")
+  }
+}
+```
+
+```{r}
+# hypotheses
+if (stat_sign > 0){
+  if (runif(1) <= prob_two_sided){
+    alt <- "two.sided"
+    H0_ineq <- "="
+    HA_ineq <- "\\neq"
+    rel <- sample(c("equal to"), 1)
+  } else{
+    alt <- "greater"
+    H0_ineq <- "\\leq"
+    HA_ineq <- ">"
+    rel <- sample(c("greater than", "at most"), 1)
+  }
+} else{
+  if (runif(1) <= prob_two_sided){
+    alt <- "two.sided"
+    H0_ineq <- "="
+    HA_ineq <- "\\neq"
+    rel <- sample(c("different than", "equal to"), 1)
+  } else{
+    alt <- "less"
+    H0_ineq <- "\\geq"
+    HA_ineq <- "<"
+    rel <- sample(c("less than", "at least"), 1)
+  }
+}
+```
+
+# answers
+```{r}
+if (data_given){
+  # Exact degrees of freedom
+  tmp <- t.test(x1, x2, mu = mu0, alternative = alt
+                , conf.level = 1 - alpha
+                , paired = is_paired)
+  t_stat <- tmp$statistic
+  
+  # two p-values; one exact df, one approximate
+  df <- if (is_paired) n1 - 1 else c(min(n1, n2)-1, tmp$parameter)
+  p_val <- c(tmp$p.value
+             , {
+               if (alt == "greater"){
+                 pt(t_stat, df = df, lower.tail = FALSE)
+               } else if (alt == "less"){
+                 pt(t_stat, df = df)
+               } else{
+                 2 * pt(abs(t_stat), df = df, lower.tail = FALSE)
+               }
+             })
+  
+  # mean difference (paired) or difference of means (indep)
+  point_estimate <- if(is_paired) tmp$estimate else diff(tmp$estimate[2:1])
+  
+  ci_low <- point_estimate - qt(1 - alpha / 2, df = df) * tmp$stderr
+  ci_upp <- point_estimate + qt(1 - alpha / 2, df = df) * tmp$stderr
+} else {
+  point_estimate <- if(is_paired) xbar_diff else xbar1 - xbar2
+  se <- if (is_paired) sd_diff / sqrt(n1) else sqrt(sd_x1^2/n1 + sd_x2^2/n2)
+  t_stat <- (point_estimate - mu0) / se
+  
+  if (sigma_known){
+    star_value <- qnorm(alpha / 2, lower.tail = FALSE)
+    if (alt == "greater"){
+      p_val <- pnorm(t_stat, lower.tail = FALSE)
+    } else if (alt == "less"){
+      p_val <- pnorm(t_stat)
+    } else{
+      p_val <- 2 * pnorm(abs(t_stat), lower.tail = FALSE)
+    }
+  } else {
+    if (is_paired){
+      df <- n1 - 1
+    } else {
+      df <- c(t.test(x1, x2)$parameter
+              , df_approx <- min(n1, n2) - 1)
+    }
+    star_value <-  qt(alpha / 2, df = df, lower.tail = FALSE)
+    if (alt == "greater"){
+      p_val <- pt(t_stat, df = df, lower.tail = FALSE)
+    } else if (alt == "less"){
+      p_val <- pt(t_stat, df = df)
+    } else{
+      p_val <- 2 * pt(abs(t_stat), df = df, lower.tail = FALSE)
+    }
+  }
+  
+  ci_low <- point_estimate - star_value * se
+  ci_upp <- point_estimate + star_value * se
+}
+
+stat_dec <- ifelse(p_val <= alpha, "Reject", "Fail to reject")
+stat_dec_wrong <- ifelse(p_val <= alpha, "Fail to reject", "Reject")
+```
+
+
+
+```{r}
+cat("xbar1 =", xbar1, "\n")
+cat("xbar2 =", xbar2, "\n")
+cat("sd_x1 =", sd_x1, "\n")
+cat("sd_x2 =", sd_x2, "\n")
+cat("xbar_diff =", xbar_diff, "\n")
+cat("sd_diff =", sd_diff, "\n\n")
+
+cat("point_estimate =", point_estimate, "\n")
+cat("t_stat =", t_stat, "\n")
+cat("df =", df, "\n")
+cat("p_val =", p_val, "\n\n")
+cat("stat_dec =", stat_dec, "\n\n")
+
+cat("ci_low =", ci_low, "\n")
+cat("ci_upp =", ci_upp, "\n\n")
+
+cat("alpha =", alpha, "\n")
+cat("mu0 =", mu0, "\n")
+cat("alt =", alt, "\n")
+cat("paired =", is_paired, "\n")
+```
+
+```{r}
+x1_data
+x2_data
+```
+
+```{r}
+x_m1 <- c(26.7, 26.8, 19.7, 28.7, 20.5, 25.6, 24.4, 33.5, 27.9, 27.6, 27.2, 31.8, 23.2, 22.2, 27.7, 21.4, 24.3, 19.5, 21.4, 24.5, 21.5, 22.2, 21.8, 18.2, 26.2, 19.7, 16, 21.7, 23.7, 25.8, 23.7, 29.3, 33.7, 15.2, 25.4, 23.1, 23.3, 16.8, 24.5, 27.6, 24.6, 21.6, 25.7, 23.3, 19.3, 13.1, 16.6, 18.8, 19.9, 24.3)
+x_m2 <- c(20.1, 23.9, 20, 19.9, 22.6, 21.5, 18, 23.8, 22.9, 19.8, 21.8, 22.3, 19.8, 27.7, 23.4, 22.9, 24.3, 24.6, 21.9, 21.8, 21.3, 25.6, 24.2, 23.2, 26.6, 23.9, 16.5, 25, 26, 23.6, 23, 19.9, 22.9, 23.3, 28.2, 21, 24.9, 22.8, 27, 24.4, 24, 21.1)
+
+point_est = mean(x_m1) - mean(x_m2)
+
+t.test(x_m1, x_m2, mu = 0
+       , alternative = "greater", conf.level = 1 - 0.06, paired = FALSE)
+
+t.test(x_m1, x_m2, mu = 0
+       , alternative = "two.sided", conf.level = 1 - 0.14, paired = FALSE)
+```
+
