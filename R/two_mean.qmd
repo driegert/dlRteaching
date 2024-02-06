@@ -18,11 +18,11 @@ null_value_zero <- sample(c(TRUE, FALSE), size = 1
 prob_two_sided <- 0.5
 
 experimental_units <- "e units"
-measurement_units <- "m units"
+measurements <- "performance scores"
 group1_name <- "group 1"
 group2_name <- "group 2"
-g1_subscript <- "1"
-g2_subscript <- "2"
+g1_subscript <- "A"
+g2_subscript <- "B"
 
 difference_order <- paste0(group1_name, " minus ", group2_name)
 
@@ -242,6 +242,24 @@ if (data_given){
 stat_dec <- ifelse(p_val <= alpha, "Reject", "Fail to reject")
 stat_dec_wrong <- ifelse(p_val <= alpha, "Fail to reject", "Reject")
 ```
+
+```{r}
+subject <- "economics"
+
+full_q_text <- "In a study aimed at evaluating the impact of two different teaching methods on student performance in SUBJECT, students were randomly assigned to two groups. One group experienced Teaching Method A, while the other group was taught using Teaching Method B. Researchers were interested in whether the mean MMM for Teaching Method A was RRR the mean MMM for Teaching Method B."
+
+alpha_text <- paste0("Using ", difference_order, " answer this question using a significance level of `alpha = AAA`."
+
+ci_text <- "In addition, determine the CCC% confidence interval for the difference."
+
+full_q_text <- gsub("MMM", measurements, full_q_text)
+full_q_text <- gsub("SUBJECT", subject, full_q_text)
+full_q_text <- gsub("RRR", rel, full_q_text)
+alpha_text <- gsub("AAA", alpha, alpha_text)
+ci_text <- gsub("CCC", 100 * (1 - alpha), ci_text)
+```
+
+
 
 
 
