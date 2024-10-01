@@ -26,10 +26,10 @@ SetupBinomial <- R6::R6Class("SetupBinom",
 # PRIVATE #
 ###########
   private = list(
-    .q_text,
-    .n,
-    .p,
-    .x,
+    .q_text = NA,
+    .n = NA,
+    .p = NA,
+    .x = NA,
     .logical_op = c("at least", "at most", "more than"
                      , "less than", "exactly")
   ),
